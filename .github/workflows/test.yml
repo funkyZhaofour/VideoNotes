@@ -1,0 +1,59 @@
+name: Desktop checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-14]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    env:
+      PYTHONUTF8: '1'
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Install models and Windows video tools
+        run: python download_assets.py
+      - name: Prepare macOS OCR and video tools
+        if: runner.os == 'macOS'
+        run: |
+          command -v ffmpeg || brew install ffmpeg
+          mkdir -p bin
+          swiftc -O ocr.swift -o bin/subtitle-ocr -framework Vision -framework Foundation
+      - name: Download public speech fixture
+        shell: bash
+        run: |
+          mkdir -p tests/fixtures
+          curl -L --fail --retry 3 https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/0-four-speakers-zh.wav -o tests/fixtures/public-speech.wav
+      - name: OCR, speech, custom folders and cancellation
+        env:
+          VIDEONOTES_TEST_AUDIO: tests/fixtures/public-speech.wav
+        run: python tests/test_portable.py
+      - name: Visual changes and Excel records
+        run: python tests/verify_v2.py
+      - name: Responsive interface and background export
+        run: python tests/ui_v2.py
+      - name: Windows desktop shortcut
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python -m venv --system-site-packages .venv
+          python install_windows.py
+          $shell = New-Object -ComObject WScript.Shell
+          $shortcut = $shell.CreateShortcut((Join-Path $shell.SpecialFolders.Item('Desktop') 'VideoNotes.lnk'))
+          if (-not (Test-Path $shortcut.TargetPath)) { throw 'Shortcut executable is missing' }
+      - name: Build macOS launcher
+        if: runner.os == 'macOS'
+        run: python build_app.py
