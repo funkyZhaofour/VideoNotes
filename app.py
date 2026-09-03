@@ -108,7 +108,7 @@ class Window(QMainWindow):
         self.worker = None
         self.result = ""
         self.temp = tempfile.TemporaryDirectory(prefix="video-notes-preview-")
-        self.setWindowTitle("视频成册 2.1.1 · 画面与取证记录")
+        self.setWindowTitle("视频成册 2.2.0 · 画面与取证记录")
         self.resize(1040, 740)
         self.setMinimumSize(640, 440)
         self.setAcceptDrops(True)
@@ -327,7 +327,7 @@ class Window(QMainWindow):
         note.setObjectName("hint")
         note.setWordWrap(True)
         layout.addWidget(note)
-        notice=QLabel('辅助整理工具，结果需核对；不提供公证或可信时间戳。 <a href="disclaimer">免责声明</a>')
+        notice=QLabel('辅助整理工具；可登记第三方取证信息，但不会签发或验证可信时间戳。 <a href="disclaimer">免责声明</a>')
         notice.setWordWrap(True)
         notice.setObjectName("hint")
         notice.linkActivated.connect(self.show_disclaimer)
@@ -387,7 +387,7 @@ class Window(QMainWindow):
                                        attachment_names="\n".join(self.evidence_form.attachments),generated_files="仅保存信息，未生成取证文件或复制附件")
             path=evidence.append_ledger(record,Path(self.output.text()).expanduser())
             self.save_draft()
-            self.status.setText("已追加一条取证记录到台账（仅保存信息）。")
+            self.status.setText("已在累计台账末尾追加一条记录；旧记录未被替换。")
         except Exception as error:
             QMessageBox.warning(self,"取证记录未保存",str(error))
 

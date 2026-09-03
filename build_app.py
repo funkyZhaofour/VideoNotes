@@ -22,8 +22,8 @@ d.rounded_rectangle((248,623,544,651), radius=14, fill="#b5d5c8")
 image.save(ROOT / "icon.png")
 image.save(contents / "Resources/AppIcon.icns", format="ICNS")
 plist = {"CFBundleName": "视频成册", "CFBundleDisplayName": "视频成册",
-         "CFBundleIdentifier": "local.videonotes.desktop", "CFBundleVersion": "211",
-         "CFBundleShortVersionString": "2.1.1", "CFBundlePackageType": "APPL",
+         "CFBundleIdentifier": "local.videonotes.desktop", "CFBundleVersion": "220",
+         "CFBundleShortVersionString": "2.2.0", "CFBundlePackageType": "APPL",
          "CFBundleExecutable": "VideoNotes", "CFBundleIconFile": "AppIcon",
          "LSMinimumSystemVersion": "14.0", "LSUIElement": True,
          "NSHighResolutionCapable": True, "VideoNotesRoot": str(ROOT)}
