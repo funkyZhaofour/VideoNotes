@@ -10,6 +10,7 @@ import uuid
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
+from notices import SHORT_NOTICE,disclaimer_text
 
 FIELDS = [
     ("evidence_id", "证据编号"), ("collected", "是否取证"), ("platform", "平台"),
@@ -94,9 +95,22 @@ def add_record(workbook, record):
             cell.fill = PatternFill("solid", fgColor="EFF7F3")
     sheet.row_dimensions[row].height = 75
     sheet.auto_filter.ref = sheet.dimensions
+    if "免责声明" not in workbook.sheetnames:
+        notice=workbook.create_sheet("免责声明")
+        notice.column_dimensions["A"].width=105
+        for text in disclaimer_text().splitlines():
+            if not text.strip(): continue
+            index=notice.max_row+1 if notice.cell(1,1).value is not None else 1
+            cell=notice.cell(index,1)
+            set_text(cell,text)
+            cell.alignment=Alignment(wrap_text=True,vertical="top")
+            cell.font=Font(name="Microsoft YaHei",size=11,bold=text.startswith("#"))
+            notice.row_dimensions[index].height=max(25,((len(text)+65)//66)*17)
     if "字段说明" not in workbook.sheetnames:
         info = workbook.create_sheet("字段说明")
-        for note in ["所有来源、账号、发布信息、传播数据和平台状态均由使用者填写，程序不从网页自动抓取。",
+        for note in [SHORT_NOTICE,
+                     "取证字段属于使用者填写的整理标签，不构成认证。使用者应核实内容权利和来源并保护隐私。",
+                     "所有来源、账号、发布信息、传播数据和平台状态均由使用者填写，程序不从网页自动抓取。",
                      "取证日期和时间由使用者填写；导出时间是本机系统时间（含时区），两者不是同一个事件。",
                      "未知、不可见或未核实的传播数据留空，可原样填写 1.2万 / 不可见。空白不等于零。",
                      "是否取证不会因生成文件自动改为是，请自行核对。疑似侵权点是填写人的描述。",

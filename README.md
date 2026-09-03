@@ -7,6 +7,8 @@
 
 把网课、录屏和本地视频整理成可以翻阅的文字稿、图文 PDF 和来源记录表。支持 **macOS / Windows**；日常处理在本机完成，无需账号或 API 密钥，不上传视频。
 
+> **使用前请阅读[免责声明与使用边界](DISCLAIMER.md)。** 自动识别结果需人工核对；本项目不提供公证、司法鉴定、可信时间戳或法律意见，不保证材料被采纳。“取证”字段只是整理标签。使用者应确认素材使用权、核实填写信息并保护隐私。责任限制仅在适用法律允许的范围内有效，不排除依法不能免除的责任。
+
 ## 功能
 
 - **Word 文字稿**：从音频识别中文、英语、粤语、日语、韩语，或使用原字幕文字。
@@ -70,6 +72,7 @@
 | `取证信息.xlsx` / `取证信息.json` | 本条记录的来源信息和输出信息 |
 | `评论区等附件/` | 手动导入的附件副本，不自动追加到 PDF |
 | `处理记录.json` / `阅读说明.txt` | 设置、时间、警告、文件校验值和截图信息 |
+| `免责声明与使用边界.txt` | 随本次结果保存的完整声明 |
 | 保存位置下的 `取证台账.xlsx` | 逐次追加的累计记录，可直接用 Excel 编辑 |
 
 ## 取证信息表
@@ -103,6 +106,8 @@ OCR 主要面向中英文字幕。现成准确字幕通常比画面 OCR 更可�
 ## English quick start
 
 VideoNotes is a local desktop tool for timestamped Word transcripts, subtitle/visual-change screenshot PDFs, and a manually maintained Excel evidence log. The interface is currently Chinese. It does not scrape websites or upload media.
+
+Read the [disclaimer](DISCLAIMER.md#english-summary): outputs require human verification and are not notarized, certified or guaranteed admissible. Applicable non-waivable rights and liabilities remain unaffected.
 
 On Windows x64, install Python 3.11 or 3.12 and run `Setup-Windows.cmd`. On macOS, install Python 3.11/3.12, FFmpeg and command-line developer tools, then run `Setup-Mac.command`. Setup downloads dependencies and models once; keep the source folder after installing the Desktop launcher.
 

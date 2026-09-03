@@ -27,6 +27,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.lib.utils import ImageReader
 from compat import process_options,ocr_command,folder_name
+from notices import SHORT_NOTICE,VERSION as NOTICE_VERSION,export_notice
 
 ROOT = Path(__file__).resolve().parent
 RATE = 16000
@@ -329,6 +330,7 @@ def write_docx(title, rows, path, source, start, end):
     document.add_heading(title, 0)
     document.add_paragraph(f"文字来源：{source} ｜ 视频范围：{timestamp(start)}–{timestamp(end)}")
     document.add_paragraph("自动识别可能有误；时间为视频中的原始位置。")
+    document.add_paragraph(SHORT_NOTICE)
     if not rows:
         document.add_paragraph("本次没有识别到可用的语音文字。")
     for row in rows:
@@ -384,6 +386,9 @@ def write_pdf(title, rows, images, path, per_page, source, stop):
             c.setFont(font, 8)
             c.setFillColorRGB(.42, .47, .5)
             c.drawString(margin, 20, source)
+            c.setFont(font,7)
+            c.drawString(margin,9,"自动生成、需人工核对；不提供公证或可信时间戳。")
+            c.setFont(font,8)
             c.drawRightString(width-margin, 20, f"{i//per_page+1} / {pages}")
         top = height-48-position*slot
         c.setFont(font, 9)
@@ -537,17 +542,18 @@ def process(opt: Options, stop=None, progress=lambda p, s: None):
             attachment_records.append({"file":str(target.relative_to(package)),"original":str(original),"sha256":evidence.fingerprint(target,check)})
         record=evidence.make_record(opt.evidence, export_started_at=started_at,export_finished_at=evidence.local_time(),
             original_file=str(video),sha256=original_hash,range=f"{timestamp(start)} – {timestamp(end)}",
-            output_folder=str(destination),generated_files="文字稿.docx\n字幕截图.pdf\n截图/\n取证信息.xlsx\n取证信息.json\n截图对应字幕.srt",
+            output_folder=str(destination),generated_files="文字稿.docx\n字幕截图.pdf\n截图/\n取证信息.xlsx\n取证信息.json\n截图对应字幕.srt\n免责声明与使用边界.txt",
             attachment_names="\n".join(x["file"] for x in attachment_records),screenshot_count=len(rows))
         evidence.write_record(record,package)
+        export_notice(package)
         report = {"video": str(video), "range": [start,end], "screenshot_source": source, "word_source": word_source,
                   "screenshots": len(rows), "transcript_segments": len(word_rows), "warnings": warnings,
-                  "options": asdict(opt), "segments": [asdict(r) for r in rows],"evidence":record,"attachments":attachment_records}
+                  "options": asdict(opt), "segments": [asdict(r) for r in rows],"evidence":record,"attachments":attachment_records,"disclaimer_version":NOTICE_VERSION}
         (package / "处理记录.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
         (package / "阅读说明.txt").write_text(
             f"视频成册\n\n截图依据：{source}\nWord 来源：{word_source}\n截图数量：{len(rows)}\n"
             "截图保留完整视频画面，PDF 图下附对应文字。\n时间戳均对应原视频。\n"
-            "超过 PDF 图下注释空间的长字幕，完整内容保存在“截图对应字幕.srt”。\n\n" + "\n".join(warnings), encoding="utf-8")
+            "超过 PDF 图下注释空间的长字幕，完整内容保存在“截图对应字幕.srt”。\n\n" + SHORT_NOTICE + "\n完整声明见“免责声明与使用边界.txt”。\n\n" + "\n".join(warnings), encoding="utf-8")
         if stop.is_set():
             raise Cancelled()
         # Reserve the chosen name before moving the completed files. Never replace

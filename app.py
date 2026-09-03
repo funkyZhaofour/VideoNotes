@@ -13,11 +13,12 @@ from PySide6.QtCore import Qt, QThread, Signal, QRectF, QUrl
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPen, QDesktopServices, QIcon
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel, QPushButton,
     QVBoxLayout, QHBoxLayout, QGridLayout, QFileDialog, QComboBox, QDoubleSpinBox,
-    QProgressBar, QMessageBox, QSlider, QFrame, QGroupBox, QLineEdit, QScrollArea, QTabWidget, QCheckBox, QBoxLayout, QInputDialog)
+    QProgressBar, QMessageBox, QSlider, QFrame, QGroupBox, QLineEdit, QScrollArea, QTabWidget, QCheckBox, QBoxLayout, QInputDialog, QDialog, QTextBrowser)
 
 from engine import ROOT, Options, process, probe, frame, timestamp, Cancelled
 from evidence_ui import EvidenceForm
 import evidence
+from notices import disclaimer_text
 from compat import folder_name
 
 
@@ -107,7 +108,7 @@ class Window(QMainWindow):
         self.worker = None
         self.result = ""
         self.temp = tempfile.TemporaryDirectory(prefix="video-notes-preview-")
-        self.setWindowTitle("视频成册 2.1 · 画面与取证记录")
+        self.setWindowTitle("视频成册 2.1.1 · 画面与取证记录")
         self.resize(1040, 740)
         self.setMinimumSize(640, 440)
         self.setAcceptDrops(True)
@@ -326,6 +327,11 @@ class Window(QMainWindow):
         note.setObjectName("hint")
         note.setWordWrap(True)
         layout.addWidget(note)
+        notice=QLabel('辅助整理工具，结果需核对；不提供公证或可信时间戳。 <a href="disclaimer">免责声明</a>')
+        notice.setWordWrap(True)
+        notice.setObjectName("hint")
+        notice.linkActivated.connect(self.show_disclaimer)
+        layout.addWidget(notice)
         screen=QApplication.primaryScreen()
         if screen:
             available=screen.availableGeometry()
@@ -336,6 +342,22 @@ class Window(QMainWindow):
         factor=int(text.rstrip("%"))/100
         scaled=re.sub(r"(font-size:\s*)(\d+)px",lambda m:m[1]+str(round(int(m[2])*factor))+"px",STYLE)
         self.setStyleSheet(scaled)
+
+    def show_disclaimer(self,*args):
+        dialog=QDialog(self)
+        dialog.setWindowTitle("免责声明与使用边界")
+        layout=QVBoxLayout(dialog)
+        browser=QTextBrowser()
+        browser.setSearchPaths([str(ROOT)])
+        browser.setOpenExternalLinks(True)
+        browser.setMarkdown(disclaimer_text())
+        layout.addWidget(browser)
+        close=QPushButton("关闭")
+        close.clicked.connect(dialog.accept)
+        layout.addWidget(close)
+        available=self.screen().availableGeometry()
+        dialog.resize(min(780,available.width()-60),min(680,available.height()-80))
+        dialog.exec()
 
     def resizeEvent(self,event):
         super().resizeEvent(event)
